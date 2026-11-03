@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ktp e-Learning - Professional Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ================= THEME & VARIABLES ================= */
+        :root {
+            --primary: #4f46e5; --primary-hover: #4338ca;
+            --secondary: #ec4899; --accent: #06b6d4;
+            --bg-body: #f3f4f6; --bg-surface: #ffffff;
+            --text-main: #1f2937; --text-muted: #6b7280;
+            --border: #e5e7eb; --sidebar-bg: #111827; --sidebar-text: #f9fafb;
+            --success: #10b981; --warning: #f59e0b;
+        }
+
+        body.dark-theme {
+            --bg-body: #111827; --bg-surface: #1f2937;
+            --text-main: #f9fafb; --text-muted: #9ca3af;
+            --border: #374151; --sidebar-bg: #030712;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background-color 0.3s; }
+
+        /* ================= SIDEBAR & NAVIGATION ================= */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 20; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .brand { padding: 25px 20px; font-size: 20px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; color: var(--accent); }
+        .nav-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
+        .nav-item { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 15px; border-left: 4px solid transparent; color: #9ca3af; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); }
+        
+        /* Progress Bar in Sidebar */
+        .progress-container { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .progress-text { font-size: 13px; color: #9ca3af; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .progress-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* ================= MAIN CONTENT ================= */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 15px 30px; background: var(--bg-surface); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); z-index: 10; }
+        .main-content { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding: 40px 20px; }
+        
+        .page-section { display: none; max-width: 850px; margin: 0 auto; animation: fadeIn 0.4s ease; padding-bottom: 60px; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ================= TYPOGRAPHY & CARDS ================= */
+        h1.course-title { font-size: 32px; color: var(--primary); font-weight: 700; margin-bottom: 15px; line-height: 1.3; }
+        h2.section-title { font-size: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin: 30px 0 20px; display: inline-block; }
+        p { line-height: 1.8; margin-bottom: 15px; font-size: 16px; color: var(--text-main); }
+        .lead-text { font-size: 18px; color: var(--text-muted); margin-bottom: 25px; }
+
+        .card { background: var(--bg-surface); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 25px; }
+        .highlight-box { background: rgba(79, 70, 229, 0.05); border-left: 4px solid var(--primary); padding: 20px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+        .highlight-box h4 { color: var(--primary); margin-bottom: 8px; font-size: 18px; }
+
+        /* ================= INTERACTIVE COMPONENTS ================= */
+        /* Accordion */
+        .accordion { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; overflow: hidden; background: var(--bg-surface); }
+        .accordion-header { padding: 15px 20px; background: rgba(0,0,0,0.02); cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .accordion-header:hover { background: rgba(79, 70, 229, 0.05); color: var(--primary); }
+        .accordion-content { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion.active .accordion-content { padding: 20px; max-height: 500px; border-top: 1px solid var(--border); }
+        .accordion.active .accordion-header { color: var(--primary); }
+
+        /* Tabs */
+        .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; background: none; border: none; font-size: 16px; cursor: pointer; color: var(--text-muted); font-weight: 500; position: relative; }
+        .tab-btn.active { color: var(--primary); }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--primary); }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        /* Comparison Table */
+        .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: var(--bg-surface); border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+        .data-table th { background: var(--primary); color: white; font-weight: 500; }
+        .data-table tr:hover { background: rgba(0,0,0,0.02); }
+
+        /* ================= BUTTONS & FORMS ================= */
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: rgba(0,0,0,0.05); }
+        .btn-success { background: var(--success); color: white; width: 100%; justify-content: center; padding: 15px; font-size: 16px; margin-top: 20px; }
+        .btn-success:hover { filter: brightness(1.1); }
+
+        input.form-control { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; background: var(--bg-body); color: var(--text-main); outline: none; margin-bottom: 15px; transition: 0.2s; }
+        input.form-control:focus { border-color: var(--primary); }
+
+        /* Quiz */
+        .quiz-item { margin-bottom: 25px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-surface); }
+        .quiz-item h4 { margin-bottom: 15px; font-size: 16px; font-weight: 500; }
+        .quiz-choice { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .quiz-choice:hover { background: rgba(79, 70, 229, 0.05); border-color: var(--primary); }
+        .quiz-choice input { transform: scale(1.2); accent-color: var(--primary); }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; padding: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+            .nav-menu { display: none; }
+            .progress-container { width: 100%; padding: 10px 0 0 0; border: none; }
+            .main-content { padding: 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand">🚀 e-Learning Pro</div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="navigate('home', this)">🏠 1. หน้าแรก (ลงทะเบียน)</div>
+            <div class="nav-item" onclick="navigate('pretest', this)">📝 2. แบบทดสอบก่อนเรียน</div>
+            <div class="nav-item" onclick="navigate('chap1', this)">📚 3. บทที่ 1: ADDIE Model</div>
+            <div class="nav-item" onclick="navigate('chap2', this)">🎨 4. บทที่ 2: Gagné’s 9 Events</div>
+            <div class="nav-item" onclick="navigate('chap3', this)">💻 5. บทที่ 3: Mayer's Theory</div>
+            <div class="nav-item" onclick="navigate('chap4', this)">📊 6. บทที่ 4: การประเมินผล</div>
+            <div class="nav-item" onclick="navigate('posttest', this)">🏆 7. แบบทดสอบหลังเรียน</div>
+            <div class="nav-item" onclick="navigate('summary', this)">🎉 8. สรุปผลการเรียน</div>
+        </nav>
+        <div class="progress-container">
+            <div class="progress-text"><span>ความคืบหน้าหลักสูตร</span> <span id="progress-percent">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="progress-bar"></div></div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+        <header>
+            <div style="font-weight: 500;">การออกแบบและพัฒนาสื่อการเรียนรู้อิเล็กทรอนิกส์</div>
+            <button class="btn btn-outline" onclick="document.body.classList.toggle('dark-theme')">🌗 สลับธีม</button>
+        </header>
+
+        <div class="main-content" id="scroll-area">
+            
+            <!-- 🏠 หน้าแรก -->
+            <div id="home" class="page-section active">
+                <div class="card" style="text-align: center; padding: 50px 20px;">
+                    <h1 class="course-title">หลักสูตร: การออกแบบสื่อ e-Learning อย่างมืออาชีพ</h1>
+                    <p class="lead-text">เรียนรู้ทฤษฎีระดับโลก ADDIE, Gagné, Mayer เพื่อสร้างสื่อที่ผู้เรียน "เรียนรู้ได้จริง" ไม่ใช่แค่สวยงาม</p>
+                    <div style="max-width: 400px; margin: 30px auto 0;">
+                        <input type="text" id="userName" class="form-control" placeholder="กรอกชื่อ-นามสกุล หรือ รหัสนักศึกษา">
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 16px;" onclick="registerUser()">
+                            บันทึกข้อมูลและเริ่มเรียน ➡️
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📝 Pre-test -->
+            <div id="pretest" class="page-section">
+                <h1 class="course-title">แบบทดสอบก่อนเรียน (Pre-test)</h1>
+                <p class="lead-text">ทดสอบความรู้พื้นฐาน จำนวน 5 ข้อ ไม่มีการเก็บคะแนนในส่วนนี้เพื่อประเมินผลตกหล่น</p>
+                <div class="card" id="pre-quiz-container"></div>
+                <button class="btn btn-success" onclick="submitQuiz('pre')">ส่งคำตอบก่อนเรียน</button>
+                <div id="pre-alert" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none; background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success);"></div>
+            </div>
+
+            <!-- 📚 บทที่ 1: ADDIE Model (Interactive Accordion) -->
+            <div id="chap1" class="page-section">
+                <h1 class="course-title">บทที่ 1: ADDIE Model (วงจรการพัฒนาระบบการสอน)</h1>
+                <p class="lead-text">ADDIE Model ไม่ใช่แค่ทฤษฎี แต่เป็น "เข็มทิศ" สำหรับนักพัฒนาสื่อทุกคน หากคุณสร้างสื่อโดยไม่ผ่านกระบวนการนี้ สื่อของคุณอาจสวยงาม แต่ไม่ตอบโจทย์เป้าหมายการเรียนรู้</p>
+                
+                <div class="highlight-box">
+                    <h4>💡 ทำไมต้อง ADDIE?</h4>
+                    <p>เพราะช่วยลดความผิดพลาดในการผลิต หากเราข้ามขั้น "วิเคราะห์" ไปสู่การ "พัฒนา" เลย เราอาจได้บทเรียนที่ยากเกินไปสำหรับผู้เรียน หรือสื่อที่สร้างขึ้นมาใช้เวลาทำนานแต่นักเรียนไม่เข้าใจ</p>
+                </div>
+
+                <h2 class="section-title">เจาะลึก 5 ขั้นตอน (คลิกที่หัวข้อเพื่ออ่านรายละเอียด)</h2>
+                
+                <div class="accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">A - Analysis (การวิเคราะห์) <span>➕</span></div>
+                    <div class="accordion-content">
+                        <p><strong>คือการหาคำตอบว่า "เราทำสื่อนี้ไปเพื่อใคร และเพื่อแก้ปัญหาอะไร?"</strong></p>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li><strong>วิเคราะห์ผู้เรียน:</strong> อายุ พื้นฐานความรู้ อุปกรณ์ที่มี (มือถือ/คอม)</li>
+                            <li><strong>วิเคราะห์เนื้อหา:</strong> ขอบเขตของเนื้อหาที่ต้องสอน อะไรสำคัญ อะไรตัดทิ้งได้</li>
+                            <li><strong>วิเคราะห์ทรัพยากร:</strong> งบประมาณ เวลาในการสร้างสื่อ ทักษะของทีมสร้าง</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">D - Design (การออกแบบ) <span>➕</span></div>
+                    <div class="accordion-content">
+                        <p><strong>ขั้นตอนนี้คือการ "เขียนพิมพ์เขียว" (Blueprint) ของสื่อทั้งหมด ก่อนลงมือสร้างจริง</strong></p>
+                        <p>กิจกรรมหลักในขั้นนี้คือ การเขียนวัตถุประสงค์เชิงพฤติกรรม, การสร้างแบบทดสอบ, และที่สำคัญที่สุดคือการทำ <strong>Storyboard</strong> (การออกแบบหน้าจอ บทพูด กราฟิก ให้เห็นภาพตรงกันทั้งทีม)</p>
+                    </div>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">D - Development (การพัฒนา) <span>➕</span></div>
+                    <div class="accordion-content">
+                        <p><strong>นำ Storyboard มาลงมือสร้างเป็นชิ้นงานจริง</strong></p>
+                        <p>ประกอบด้วยการถ่ายทำวิดีโอ, อัดเสียง, ตัดต่อ, เขียนโค้ด (Programming) ลงในโปรแกรมสร้างสื่อ เช่น Articulate Storyline, Captivate หรือการเขียนเว็บ HTML5 ตามที่ออกแบบไว้</p>
+                    </div>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">I - Implementation (การนำไปใช้) <span>➕</span></div>
+                    <div class="accordion-content">
+                        <p><strong>นำสื่อที่สร้างเสร็จไปให้กลุ่มเป้าหมายใช้จริง</strong></p>
+                        <p>เป็นการอัปโหลดสื่อขึ้นระบบ LMS (Learning Management System) ให้ผู้เรียนเข้ามาเรียน พร้อมเตรียมคู่มือการใช้งาน หรือช่วยแก้ปัญหาทางเทคนิคระหว่างเรียน</p>
+                    </div>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">E - Evaluation (การประเมินผล) <span>➕</span></div>
+                    <div class="accordion-content">
+                        <p><strong>หาคำตอบว่า "สื่อที่เราทำ บรรลุเป้าหมายหรือไม่?"</strong></p>
+                        <p>แบ่งเป็น Formative (ประเมินระหว่างการสร้างเพื่อแก้ไข) และ Summative (ประเมินผลลัพธ์สุดท้ายหลังใช้งานจริง) เช่น การหาประสิทธิภาพบทเรียน E1/E2 ตามเกณฑ์ 80/80</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="markComplete('chap1')">✅ ฉันเข้าใจเนื้อหาบทที่ 1 แล้ว ไปบทถัดไป</button>
+            </div>
+
+            <!-- 🎨 บทที่ 2: Gagné’s 9 Events (Interactive Tabs) -->
+            <div id="chap2" class="page-section">
+                <h1 class="course-title">บทที่ 2: ทฤษฎีการสอนของ Robert Gagné</h1>
+                <p class="lead-text">กาเย่ได้จัดระบบเหตุการณ์การเรียนการสอน 9 ประการ (9 Events of Instruction) โดยสอดคล้องกับกระบวนการทำงานของสมองมนุษย์ตั้งแต่รับรู้จนถึงจดจำ</p>
+
+                <div class="card">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab(this, 'gagne-prep')">ขั้นเตรียมความพร้อม (1-3)</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'gagne-teach')">ขั้นดำเนินการสอน (4-7)</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'gagne-assess')">ขั้นประเมินและจดจำ (8-9)</button>
+                    </div>
+                    
+                    <div id="gagne-prep" class="tab-content active" style="padding-top: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">1. เร้าความสนใจ (Gain Attention)</h4>
+                        <p>ใช้คำถามกระตุ้นความชวนคิด ภาพเคลื่อนไหว หรือสถานการณ์จำลอง เพื่อให้สมองผู้เรียนเปิดรับข้อมูล</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">2. แจ้งวัตถุประสงค์ (Inform Objectives)</h4>
+                        <p>บอกให้ชัดเจนว่าเรียนจบแล้ว ผู้เรียนจะ "ทำอะไรได้บ้าง" เพื่อให้เกิดความคาดหวัง</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">3. ทบทวนความรู้เดิม (Stimulate Recall)</h4>
+                        <p>เชื่อมโยงความรู้ใหม่เข้ากับสิ่งที่รู้มาก่อนหน้า เช่น "จำสมการที่เราเรียนสัปดาห์ที่แล้วได้ไหม วันนี้เราจะนำมาประยุกต์ใช้กัน"</p>
+                    </div>
+
+                    <div id="gagne-teach" class="tab-content" style="padding-top: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">4. นำเสนอเนื้อหาใหม่ (Present Content)</h4>
+                        <p>จัดกลุ่มเนื้อหาให้เป็นหมวดหมู่ (Chunking) ใช้สื่อมัลติมีเดีย ภาพ เสียง หรืออินโฟกราฟิกช่วยอธิบาย</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">5. ชี้แนะแนวทางการเรียนรู้ (Provide Guidance)</h4>
+                        <p>ให้ตัวอย่างประกอบ (Examples), เทคนิคการจำ (Mnemonics) หรือกรณีศึกษา (Case Studies)</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">6. ให้ฝึกปฏิบัติ (Elicit Performance)</h4>
+                        <p>ให้ผู้เรียนทำแบบฝึกหัด เล่นมินิเกม หรือตอบคำถามเพื่อให้สมองดึงข้อมูลออกมาใช้</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">7. ให้ข้อมูลป้อนกลับ (Provide Feedback)</h4>
+                        <p>เฉลยคำตอบพร้อมคำอธิบายว่าถูกหรือผิดเพราะอะไร (Corrective Feedback)</p>
+                    </div>
+
+                    <div id="gagne-assess" class="tab-content" style="padding-top: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">8. ประเมินผลการปฏิบัติ (Assess Performance)</h4>
+                        <p>ทำแบบทดสอบหลังเรียน (Post-test) โดยไม่ต้องมีคำใบ้ เพื่อวัดผลสัมฤทธิ์อย่างแท้จริง</p>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">9. ส่งเสริมความจำและการนำไปใช้ (Enhance Retention)</h4>
+                        <p>สรุปเนื้อหาสั้นๆ ให้ใบงานไปทำที่บ้าน หรือแนะแนววิธีการนำไปประยุกต์ใช้ในชีวิตจริง</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="markComplete('chap2')">✅ ฉันเข้าใจเนื้อหาบทที่ 2 แล้ว ไปบทถัดไป</button>
+            </div>
+
+            <!-- 💻 บทที่ 3: Mayer's Theory (Data Table) -->
+            <div id="chap3" class="page-section">
+                <h1 class="course-title">บทที่ 3: ทฤษฎีมัลติมีเดียของ Richard Mayer</h1>
+                <p class="lead-text">สมองมนุษย์มีช่องรับข้อมูล 2 ทาง คือ "ตา" (มองภาพ/อ่านตัวหนังสือ) และ "หู" (ฟังเสียง) หากใส่ข้อมูลช่องใดช่องหนึ่งมากเกินไป จะเกิดภาวะ <strong>Cognitive Overload (สมองรับภาระหนักเกิน)</strong></p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ชื่อหลักการ (Principle)</th>
+                            <th>สิ่งที่ควรทำ (Do)</th>
+                            <th>สิ่งที่ไม่ควรทำ (Don't)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Multimedia</strong></td>
+                            <td>ใช้ <strong>ภาพ + คำอธิบาย</strong> ควบคู่กัน</td>
+                            <td>ใช้ตัวหนังสือล้วนๆ เต็มหน้ากระดาน</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Contiguity</strong> (ความใกล้ชิด)</td>
+                            <td>วางข้อความอธิบาย ให้ <strong>ติดกับ</strong> ภาพนั้นๆ</td>
+                            <td>วางภาพไว้อีกหน้า แล้วให้ข้อความอยู่อีกหน้า</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. Redundancy</strong> (ความซ้ำซ้อน)</td>
+                            <td>ใช้ <strong>ภาพ + เสียงบรรยาย</strong> (ดีที่สุด)</td>
+                            <td>มีภาพ + มีตัวหนังสือเต็มจอ + และมีเสียงพูดอ่านตัวหนังสือทุกตัว (ผู้เรียนจะสับสน)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. Coherence</strong> (ความสอดคล้อง)</td>
+                            <td>ใส่เฉพาะสิ่งที่จำเป็นต่อการเรียนรู้จริงๆ</td>
+                            <td>ใส่เพลงตื่นเต้น หรือภาพการ์ตูนที่ไม่เกี่ยวกับเนื้อหา (ดึงความสนใจผิดจุด)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight-box">
+                    <h4>🧠 สรุปทริคง่ายๆ จาก Mayer</h4>
+                    <p>"Less is More" สื่อ e-Learning ที่ดีไม่ใช่สื่อที่เอฟเฟกต์อลังการ แต่เป็นสื่อที่กำจัดสิ่งรบกวนออกไป และนำเสนอเฉพาะสิ่งที่ทำให้เกิดการเรียนรู้ได้ง่ายที่สุด</p>
+                </div>
+
+                <button class="btn btn-success" onclick="markComplete('chap3')">✅ ฉันเข้าใจเนื้อหาบทที่ 3 แล้ว ไปบทถัดไป</button>
+            </div>
+
+            <!-- 📊 บทที่ 4: การวัดผล -->
+            <div id="chap4" class="page-section">
+                <h1 class="course-title">บทที่ 4: การวัดและประเมินผล</h1>
+                <p class="lead-text">การสร้างข้อสอบใน e-Learning เป็นส่วนสำคัญที่สุดในการพิสูจน์ว่าผู้เรียนได้ความรู้กลับไปจริงๆ</p>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+                    <div class="card" style="flex: 1; min-width: 280px; border-top: 4px solid var(--accent);">
+                        <h3 style="margin-bottom: 15px;">Formative Assessment</h3>
+                        <p style="color: var(--text-muted); font-size: 14px;"><strong>(การประเมินระหว่างเรียน)</strong></p>
+                        <ul style="margin-left: 15px; font-size: 15px; line-height: 1.6;">
+                            <li>ทำขึ้นเพื่อติดตามความก้าวหน้า</li>
+                            <li>มีเพื่อ "ให้ Feedback" แก่ผู้เรียนว่าผิดตรงไหน</li>
+                            <li>คะแนนไม่ได้นำไปใช้ตัดสินได้-ตก</li>
+                            <li>ตัวอย่าง: ควิซท้ายบทเรียนสั้นๆ, มินิเกม</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="flex: 1; min-width: 280px; border-top: 4px solid var(--secondary);">
+                        <h3 style="margin-bottom: 15px;">Summative Assessment</h3>
+                        <p style="color: var(--text-muted); font-size: 14px;"><strong>(การประเมินรวบยอด)</strong></p>
+                        <ul style="margin-left: 15px; font-size: 15px; line-height: 1.6;">
+                            <li>ทำเมื่อจบกระบวนการเรียนทั้งหมด</li>
+                            <li>มีเพื่อ "ตัดสินระดับผลสัมฤทธิ์" (ได้เกรดอะไร/ผ่านหรือไม่)</li>
+                            <li>ต้องมีความเป็นทางการ เข้มงวด</li>
+                            <li>ตัวอย่าง: ข้อสอบปลายภาค, ข้อสอบวัดระดับ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>🎯 คุณสมบัติของข้อสอบที่ดี</h4>
+                    <p><strong>1. ความเที่ยงตรง (Validity):</strong> วัดได้ตรงกับวัตถุประสงค์ที่ตั้งไว้แต่แรก (อยากวัดทักษะการซ่อมคอม ไม่ใช่ออกข้อสอบถามประวัติคนสร้างคอม)<br>
+                    <strong>2. ความเชื่อมั่น (Reliability):</strong> ความคงเส้นคงวา วัดกี่ครั้ง กับนักเรียนกี่คน กลุ่มเดิม ผลคะแนนก็ยังมีความแม่นยำคงที่</p>
+                </div>
+
+                <button class="btn btn-success" onclick="markComplete('chap4')">✅ ฉันพร้อมสอบหลังเรียนแล้ว!</button>
+            </div>
+
+            <!-- 🏆 Post-test -->
+            <div id="posttest" class="page-section">
+                <h1 class="course-title">แบบทดสอบหลังเรียน (Post-test)</h1>
+                <p class="lead-text">ทำแบบทดสอบเพื่อรับผลการเรียน วัดความรู้ทั้งหมดที่เรียนมา จำนวน 5 ข้อ</p>
+                <div class="card" id="post-quiz-container"></div>
+                <button class="btn btn-success" onclick="submitQuiz('post')">ส่งคำตอบหลังเรียนเพื่อดูคะแนน</button>
+                <div id="post-alert" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none; background: rgba(79, 70, 229, 0.1); color: var(--primary); border: 1px solid var(--primary);"></div>
+            </div>
+
+            <!-- 🎉 Summary -->
+            <div id="summary" class="page-section">
+                <div class="card" style="text-align: center; padding: 40px 20px;">
+                    <h1 class="course-title">🎉 สรุปผลการเรียนรู้</h1>
+                    <h2 id="sum-name" style="margin-bottom: 30px; color: var(--text-muted);">ผู้เรียน: -</h2>
+                    
+                    <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                        <div style="background: rgba(0,0,0,0.03); padding: 30px; border-radius: 12px; min-width: 200px; border: 1px solid var(--border);">
+                            <h3 style="color: var(--text-muted); font-size: 16px; margin-bottom: 10px;">คะแนนก่อนเรียน</h3>
+                            <div id="sum-pre" style="font-size: 48px; font-weight: 700; color: var(--text-main);">-</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">คะแนนเต็ม 5</div>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 30px; border-radius: 12px; min-width: 200px; border: 1px solid var(--success);">
+                            <h3 style="color: var(--success); font-size: 16px; margin-bottom: 10px;">คะแนนหลังเรียน</h3>
+                            <div id="sum-post" style="font-size: 48px; font-weight: 700; color: var(--success);">-</div>
+                            <div style="font-size: 14px; color: var(--success);">คะแนนเต็ม 5</div>
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 30px; color: var(--text-muted);">ขอบคุณที่ใช้ระบบ e-Learning Pro ของเราครับ!</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JavaScript สำหรับควบคุมระบบ Interactive และ Logic ทั้งหมด -->
+    <script>
+        // ข้อมูลข้อสอบ 5 ข้อแบบคุณภาพ
+        const quizData = [
+            { q: "1. ขั้นตอนใดใน ADDIE Model ที่สำคัญที่สุดในการเขียน Storyboard?", choices: ["Analysis (วิเคราะห์)", "Design (ออกแบบ)", "Development (พัฒนา)", "Implementation (นำไปใช้)"], ans: 1 },
+            { q: "2. 'การเชื่อมโยงความรู้เดิม' ของผู้เรียน ตรงกับขั้นตอนที่เท่าไหร่ของ Gagné?", choices: ["ขั้นที่ 1", "ขั้นที่ 2", "ขั้นที่ 3", "ขั้นที่ 4"], ans: 2 },
+            { q: "3. ข้อใดฝ่าฝืนหลักการ Redundancy Principle ของ Mayer?", choices: ["ใช้รูปภาพประกอบเสียงบรรยาย", "เปิดเพลงคลาสสิกเบาๆ ในหน้าทำแบบทดสอบ", "มีรูปภาพและตัวอักษรเต็มจอ พร้อมเสียงอ่านข้อความเป๊ะๆ ทุกคำ", "ตัดเนื้อหาที่ไม่จำเป็นทิ้ง"], ans: 2 },
+            { q: "4. ความเที่ยงตรง (Validity) ในการวัดผล หมายถึงข้อใด?", choices: ["วัดกี่ครั้งคะแนนก็เท่าเดิม", "ข้อสอบยากจนไม่มีใครทำเต็ม", "วัดได้ตรงกับวัตถุประสงค์ที่ตั้งไว้", "รูปแบบข้อสอบสวยงามอ่านง่าย"], ans: 2 },
+            { q: "5. การหาประสิทธิภาพสื่อ E1/E2 ตามเกณฑ์ 80/80 อยู่ในกระบวนการใดของ ADDIE?", choices: ["Development", "Design", "Implementation", "Evaluation"], ans: 3 }
+        ];
+
+        let completedModules = 0;
+        const totalModules = 5; // 4 Chaps + 1 Posttest
+
+        window.onload = () => {
+            renderQuiz('pre');
+            renderQuiz('post');
+            
+            // โหลดชื่อถ้ามี
+            const savedName = localStorage.getItem('ktpPro_name');
+            if(savedName) document.getElementById('userName').value = savedName;
+        };
+
+        function registerUser() {
+            const name = document.getElementById('userName').value.trim();
+            if(!name) { alert("⚠️ กรุณาระบุชื่อก่อนเริ่มเรียนครับ"); return; }
+            localStorage.setItem('ktpPro_name', name);
+            alert(`ยินดีต้อนรับคุณ ${name} เข้าสู่บทเรียนครับ`);
+            document.querySelectorAll('.nav-item')[1].click(); // ไปหน้า pretest
+        }
+
+        // ระบบ SPA เปลี่ยนหน้า
+        function navigate(pageId, navElement) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            navElement.classList.add('active');
+            
+            document.getElementById('scroll-area').scrollTop = 0; // เลื่อนขึ้นบน
+
+            if(pageId === 'summary') generateSummary();
+        }
+
+        // ระบบ UI: Accordion
+        function toggleAccordion(element) {
+            const parent = element.parentElement;
+            parent.classList.toggle('active');
+        }
+
+        // ระบบ UI: Tabs
+        function switchTab(btn, tabId) {
+            // เคลียร์ปุ่ม
+            const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // เคลียร์เนื้อหา
+            const contents = btn.parentElement.parentElement.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // ระบบ Progress Tracking
+        function markComplete(chapId) {
+            completedModules++;
+            updateProgress();
+            
+            // อัตโนมัติไปหน้าถัดไป
+            const navItems = document.querySelectorAll('.nav-item');
+            if(chapId === 'chap1') navItems[3].click();
+            if(chapId === 'chap2') navItems[4].click();
+            if(chapId === 'chap3') navItems[5].click();
+            if(chapId === 'chap4') navItems[6].click();
+        }
+
+        function updateProgress() {
+            const percent = Math.min((completedModules / totalModules) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-percent').innerText = Math.round(percent) + '%';
+        }
+
+        // ระบบสร้างข้อสอบและตรวจ
+        function renderQuiz(prefix) {
+            let html = "";
+            quizData.forEach((item, i) => {
+                html += `<div class="quiz-item"><h4>${item.q}</h4>`;
+                item.choices.forEach((choice, c) => {
+                    html += `<label class="quiz-choice">
+                                <input type="radio" name="${prefix}_q${i}" value="${c === item.ans ? 1 : 0}">
+                                <span>${choice}</span>
+                             </label>`;
+                });
+                html += `</div>`;
+            });
+            document.getElementById(`${prefix}-quiz-container`).innerHTML = html;
+        }
+
+        function submitQuiz(prefix) {
+            const name = localStorage.getItem('ktpPro_name');
+            if(!name) { alert("กรุณาลงทะเบียนที่หน้าแรกก่อนทำข้อสอบครับ"); return; }
+
+            let score = 0;
+            for(let i=0; i<quizData.length; i++) {
+                const selected = document.querySelector(`input[name="${prefix}_q${i}"]:checked`);
+                if(!selected) { alert(`กรุณาตอบคำถามข้อ ${i+1} ให้ครบครับ`); return; }
+                score += parseInt(selected.value);
+            }
+
+            localStorage.setItem(`ktpPro_${prefix}Score`, score);
+            
+            const alertBox = document.getElementById(`${prefix}-alert`);
+            alertBox.style.display = 'block';
+            alertBox.innerHTML = `✅ บันทึกคะแนนเรียบร้อย! คุณได้ <strong>${score} / ${quizData.length}</strong> คะแนน`;
+
+            if(prefix === 'post') {
+                markComplete('post'); // บวก progress
+                setTimeout(() => document.querySelectorAll('.nav-item')[7].click(), 1500); // ไปหน้าสรุป
+            } else {
+                setTimeout(() => document.querySelectorAll('.nav-item')[2].click(), 1500); // ไปบทที่ 1
+            }
+        }
+
+        // ระบบสรุปผล
+        function generateSummary() {
+            const name = localStorage.getItem('ktpPro_name');
+            const pre = localStorage.getItem('ktpPro_preScore');
+            const post = localStorage.getItem('ktpPro_postScore');
+
+            document.getElementById('sum-name').innerText = name ? `ผู้เรียน: คุณ${name}` : 'ยังไม่ได้ลงทะเบียน';
+            document.getElementById('sum-pre').innerText = pre !== null ? pre : '-';
+            document.getElementById('sum-post').innerText = post !== null ? post : '-';
+        }
+    </script>
+</body>
+</html>
